@@ -1,3 +1,5 @@
-from django.shortcuts import render
+# tickets/views.py
+from django.http import JsonResponse
 
-# Create your views here.
+def ticket_test(request):
+    return JsonResponse({'message': 'Tickets app is working!'})
