@@ -1,7 +1,10 @@
-# tickets/urls.py
-from django.urls import path
-from . import views  # Make sure views.py exists in the tickets app
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import TicketViewSet
+
+router = DefaultRouter()
+router.register(r'tickets', TicketViewSet)
 
 urlpatterns = [
-    path('test/', views.ticket_test, name='ticket_test'),
+    path('', include(router.urls)),
 ]

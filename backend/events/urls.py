@@ -1,6 +1,10 @@
-# users/urls.py
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import EventViewSet
+
+router = DefaultRouter()
+router.register(r'events', EventViewSet)
 
 urlpatterns = [
-    # add your user-related endpoints here later
+    path('', include(router.urls)),
 ]
