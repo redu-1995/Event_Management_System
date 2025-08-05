@@ -1,47 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
-
-const sampleEvents = [
-  {
-    id: 1,
-    title: 'Summer Music Festival',
-    date: '2025-06-15',
-    location: 'Addis Ababa',
-    category: 'Festival',
-    icon: '🎉',
-    price: 200,
-    popularity: 95,
-    description: 'Enjoy live music, food, and fun at the biggest festival of the year!',
-  },
-  {
-    id: 2,
-    title: 'Tech Conference 2025',
-    date: '2025-07-22',
-    location: 'Adama',
-    category: 'Conference',
-    icon: '💡',
-    price: 100,
-    popularity: 80,
-    description: 'Join industry leaders and innovators for a day of talks and networking.',
-  },
-  {
-    id: 3,
-    title: 'Jazz Night',
-    date: '2025-06-30',
-    location: 'Bahir Dar',
-    category: 'Concert',
-    icon: '🎷',
-    price: 150,
-    popularity: 70,
-    description: 'A night of smooth jazz with top local and international artists.',
-  },
-  // ...add more events for pagination demo
-];
+import Navbar from './Navbar'; // <-- Import Navbar
 
 const EVENTS_PER_PAGE = 3;
 
 const Events = () => {
+  const [events, setEvents] = useState([]);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
   const [location, setLocation] = useState('');
@@ -49,20 +14,38 @@ const Events = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch events from backend
+  useEffect(() => {
+    const fetchEvents = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/events/');
+        if (!response.ok) throw new Error('Failed to fetch events');
+        const data = await response.json();
+        setEvents(data);
+      } catch (err) {
+        setEvents([]);
+      }
+      setLoading(false);
+    };
+    fetchEvents();
+  }, []);
 
   // Filtering
-  let filteredEvents = sampleEvents.filter(event =>
+  let filteredEvents = events.filter(event =>
     (event.title.toLowerCase().includes(search.toLowerCase()) ||
       event.description.toLowerCase().includes(search.toLowerCase())) &&
-    (category === '' || event.category.toLowerCase() === category.toLowerCase()) &&
-    (location === '' || event.location.toLowerCase().includes(location.toLowerCase()))
+    (category === '' || (event.category && event.category.toLowerCase() === category.toLowerCase())) &&
+    (location === '' || (event.location && event.location.toLowerCase().includes(location.toLowerCase())))
   );
 
   // Sorting
   filteredEvents = filteredEvents.sort((a, b) => {
     if (sort === 'date') return new Date(a.date) - new Date(b.date);
-    if (sort === 'popularity') return b.popularity - a.popularity;
-    if (sort === 'price') return a.price - b.price;
+    if (sort === 'popularity') return (b.popularity || 0) - (a.popularity || 0);
+    if (sort === 'price') return (a.price || 0) - (b.price || 0);
     return 0;
   });
 
@@ -79,43 +62,7 @@ const Events = () => {
   return (
     <div className="font-sans text-gray-800 bg-blue-50 min-h-screen">
       {/* Navbar */}
-      <nav className="bg-white shadow-md px-6 py-4 sticky top-0 z-50">
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
-          {/* Logo */}
-          <div className="flex items-center space-x-2">
-            <span className="text-3xl text-blue-700">🎟️</span>
-            <span className="text-2xl font-extrabold text-blue-700 tracking-tight">EventManager</span>
-          </div>
-          {/* Desktop Links */}
-          <div className="hidden md:flex md:items-center md:space-x-6 text-sm font-semibold">
-            <Link to="/" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Home</Link>
-            <Link to="/events" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Browse Events</Link>
-            <Link to="/tickets" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">My Tickets</Link>
-            <Link to="/login" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Login / Register</Link>
-            <Link to="/profile" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Profile</Link>
-            <Link to="/create-event" className="ml-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full font-bold shadow transition">+ Create Event</Link>
-          </div>
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden focus:outline-none text-blue-700"
-            aria-label="Toggle menu"
-          >
-            {isMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
-          </button>
-        </div>
-        {/* Mobile Links */}
-        {isMenuOpen && (
-          <div className="md:hidden mt-3 flex flex-col space-y-2 text-base font-semibold text-blue-700 bg-white rounded shadow-lg px-6 py-4">
-            <Link to="/" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={handleMenuLink}>Home</Link>
-            <Link to="/events" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={handleMenuLink}>Browse Events</Link>
-            <Link to="/tickets" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={handleMenuLink}>My Tickets</Link>
-            <Link to="/login" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={handleMenuLink}>Login / Register</Link>
-            <Link to="/profile" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={handleMenuLink}>Profile</Link>
-            <Link to="/create-event" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full font-bold shadow transition" onClick={handleMenuLink}>+ Create Event</Link>
-          </div>
-        )}
-      </nav>
+      <Navbar />
 
       {/* Search, Filter, Sort Bar */}
       <div className="max-w-4xl mx-auto mb-8 mt-8 flex flex-col md:flex-row gap-4 items-center bg-white rounded-xl shadow-lg p-6">
@@ -157,7 +104,11 @@ const Events = () => {
 
       {/* Event Cards Grid */}
       <div className="max-w-6xl mx-auto grid gap-8 md:grid-cols-3">
-        {paginatedEvents.length === 0 ? (
+        {loading ? (
+          <div className="col-span-3 text-center text-blue-700 font-semibold text-lg py-12">
+            Loading events...
+          </div>
+        ) : paginatedEvents.length === 0 ? (
           <div className="col-span-3 text-center text-blue-700 font-semibold text-lg py-12">
             No events found.
           </div>
@@ -169,16 +120,17 @@ const Events = () => {
             >
               {/* Date Badge */}
               <span className="absolute top-0 right-0 mt-4 mr-4 bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full shadow">
-                {new Date(event.date).toLocaleDateString()}
+                {event.date ? new Date(event.date).toLocaleDateString() : ''}
               </span>
               {/* Event Icon */}
-              <div className="mb-4 text-4xl">{event.icon}</div>
+              <div className="mb-4 text-4xl">{event.icon || '🎫'}</div>
               <h3 className="text-lg font-bold text-blue-800 mb-2">{event.title}</h3>
               <p className="text-sm text-gray-600 leading-relaxed mb-2">
                 <span className="font-semibold">Location:</span> {event.location}
               </p>
               <p className="text-sm text-gray-600 leading-relaxed mb-2">
-                <span className="font-semibold">Price:</span> ${event.price}
+                <span className="font-semibold">Price:</span> ETB{event.price || 'N/A'}
+
               </p>
               <p className="text-sm text-gray-600 leading-relaxed mb-4">{event.description}</p>
               <button
@@ -230,28 +182,18 @@ const Events = () => {
               &times;
             </button>
             <div className="flex items-center space-x-4 mb-4">
-              <span className="text-4xl">{selectedEvent.icon}</span>
+              <span className="text-4xl">{selectedEvent.icon || '🎫'}</span>
               <h3 className="text-2xl font-bold text-blue-800">{selectedEvent.title}</h3>
             </div>
-            <p className="mb-2"><span className="font-semibold">Date:</span> {new Date(selectedEvent.date).toLocaleDateString()}</p>
+            <p className="mb-2"><span className="font-semibold">Date:</span> {selectedEvent.date ? new Date(selectedEvent.date).toLocaleDateString() : ''}</p>
             <p className="mb-2"><span className="font-semibold">Location:</span> {selectedEvent.location}</p>
             <p className="mb-2"><span className="font-semibold">Category:</span> {selectedEvent.category}</p>
-            <p className="mb-2"><span className="font-semibold">Price:</span> ${selectedEvent.price}</p>
-            <p className="mb-4">{selectedEvent.description}</p>
-            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-full shadow transition">
-              Buy Ticket
-            </button>
+            <p className="mb-2"><span className="font-semibold">Price:</span> ${selectedEvent.price || 'N/A'}</p>
+            
+            
           </div>
         </div>
       )}
-
-      {/* Floating Create Event Button (for organizers, demo only) */}
-      <Link
-        to="/create-event"
-        className="fixed bottom-8 right-8 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full font-bold shadow-lg text-lg z-40 transition"
-      >
-        + Create Event
-      </Link>
     </div>
   );
 };

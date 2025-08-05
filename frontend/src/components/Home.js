@@ -1,14 +1,88 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, ChevronDown } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
+import Navbar from './Navbar';
+import BuyTicketModal from './BuyTicketModal';
 
 const Home = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [profileDropdown, setProfileDropdown] = useState(false);
+  const [searchInput, setSearchInput] = useState('');
+  const [allEvents, setAllEvents] = useState([]);
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const [categoryEvents, setCategoryEvents] = useState({});
+  const [authChanged, setAuthChanged] = useState(false);
+  const [showAllEvents, setShowAllEvents] = useState(false);
+  const [showBuyModal, setShowBuyModal] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
   const navigate = useNavigate();
 
-  // Close dropdown when clicking outside
-  React.useEffect(() => {
+  // Logout handler
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setIsMenuOpen(false);
+    setAuthChanged(a => !a); // force re-render
+    navigate('/');
+  };
+
+  // Get user from localStorage
+  let user = null;
+  try {
+    user = JSON.parse(localStorage.getItem('user'));
+  } catch {
+    user = null;
+  }
+
+  // Helper: is event in the past?
+  const isPastEvent = (event) => {
+    if (!event?.date) return false;
+    return new Date(event.date) < new Date().setHours(0,0,0,0);
+  };
+
+  // Fetch all events and categorize them
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/events/');
+        if (!response.ok) throw new Error('Failed to fetch events');
+        const data = await response.json();
+        setAllEvents(data);
+
+        // Filter for upcoming events (today or future)
+        const upcoming = data.filter(event => !isPastEvent(event));
+        setUpcomingEvents(upcoming);
+
+        // Group events by category
+        const grouped = {};
+        data.forEach(event => {
+          const cat = event.category || 'Other';
+          if (!grouped[cat]) grouped[cat] = [];
+          grouped[cat].push(event);
+        });
+        setCategoryEvents(grouped);
+      } catch (err) {
+        setAllEvents([]);
+        setUpcomingEvents([]);
+        setCategoryEvents({});
+      }
+    };
+    fetchEvents();
+  }, [authChanged]);
+
+  // Carousel auto-advance
+  useEffect(() => {
+    const eventsToShow = showAllEvents ? allEvents : upcomingEvents;
+    if (eventsToShow.length === 0) return;
+    const interval = setInterval(() => {
+      setCarouselIndex((prev) => (prev + 1) % eventsToShow.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [upcomingEvents, allEvents, showAllEvents]);
+
+  
+  useEffect(() => {
     const handleClick = (e) => {
       if (!e.target.closest('.profile-dropdown')) setProfileDropdown(false);
     };
@@ -16,89 +90,94 @@ const Home = () => {
     return () => document.removeEventListener('mousedown', handleClick);
   }, [profileDropdown]);
 
-  const handleOrganizerDashboard = () => {
-    setProfileDropdown(false);
-    navigate('/organizer/dashboard');
+
+ const getCarouselEvents = () => {
+  const eventsToShow = showAllEvents ? allEvents : upcomingEvents;
+  if (eventsToShow.length === 0) return [];
+
+  const visibleCount = Math.min(3, eventsToShow.length); 
+  const events = [];
+
+  for (let i = 0; i < visibleCount; i++) {
+    events.push(eventsToShow[(carouselIndex + i) % eventsToShow.length]);
+  }
+
+  return events;
+};
+
+
+  // Navbar links logic (unchanged)
+  const renderNavLinks = () => {
+    if (!user) {
+      return (
+        <>
+          <Link to="/" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Home</Link>
+          <Link to="/events" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Browse Events</Link>
+          <Link to="/search" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Search Events</Link>
+          <Link to="/register" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Register</Link>
+          <Link to="/login" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Login</Link>
+        </>
+      );
+    }
+    return (
+      <>
+        <Link to="/" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Home</Link>
+        <Link to="/events" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Browse Events</Link>
+        <Link to="/search" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Search Events</Link>
+        {user.role === 'organizer' && (
+          <Link to="/dashboard" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Dashboard</Link>
+        )}
+        {user.role === 'attendee' && (
+          <Link to="/profile" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Profile</Link>
+        )}
+        <button
+          onClick={handleLogout}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded transition ml-2"
+        >
+          Logout
+        </button>
+      </>
+    );
+  };
+
+  // Mobile nav links (unchanged)
+  const renderMobileLinks = () => {
+    if (!user) {
+      return (
+        <>
+          <Link to="/" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={() => setIsMenuOpen(false)}>Home</Link>
+          <Link to="/events" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={() => setIsMenuOpen(false)}>Browse Events</Link>
+          <Link to="/search" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={() => setIsMenuOpen(false)}>Search Events</Link>
+          <Link to="/register" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={() => setIsMenuOpen(false)}>Register</Link>
+          <Link to="/login" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={() => setIsMenuOpen(false)}>Login</Link>
+        </>
+      );
+    }
+    return (
+      <>
+        <Link to="/" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={() => setIsMenuOpen(false)}>Home</Link>
+        <Link to="/events" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={() => setIsMenuOpen(false)}>Browse Events</Link>
+        <Link to="/search" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={() => setIsMenuOpen(false)}>Search Events</Link>
+        {user.role === 'organizer' && (
+          <Link to="/dashboard" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={() => setIsMenuOpen(false)}>Dashboard</Link>
+        )}
+        {user.role === 'attendee' && (
+          <Link to="/profile" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={() => setIsMenuOpen(false)}>Profile</Link>
+        )}
+        <button
+          onClick={handleLogout}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded transition mt-2"
+        >
+          Logout
+        </button>
+      </>
+    );
   };
 
   return (
     <div className="font-sans text-gray-800">
-      {/* Navbar */}
-      <nav className="bg-white shadow-md px-6 py-4 sticky top-0 z-50">
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
-          {/* Logo */}
-          <div className="flex items-center space-x-2">
-            <span className="text-3xl text-blue-700">🎟️</span>
-            <span className="text-2xl font-extrabold text-blue-700 tracking-tight">EventManager</span>
-          </div>
-          {/* Desktop Links */}
-          <div className="hidden md:flex md:items-center md:space-x-6 text-sm font-semibold">
-            <Link to="/" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Home</Link>
-            <Link to="/events" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Browse Events</Link>
-            <Link to="/tickets" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">My Tickets</Link>
-            <Link to="/login" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Login</Link>
-            <Link to="/register" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Register</Link>
-            {/* Profile Dropdown */}
-            <div className="relative profile-dropdown">
-              <button
-                onClick={() => setProfileDropdown((v) => !v)}
-                className="flex items-center text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition focus:outline-none"
-              >
-                Profile <ChevronDown className="ml-1 w-4 h-4" />
-              </button>
-              {profileDropdown && (
-                <div className="absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg z-50">
-                  <Link
-                    to="/profile"
-                    className="block px-4 py-2 hover:bg-blue-50 text-blue-700"
-                    onClick={() => setProfileDropdown(false)}
-                  >
-                    My Profile
-                  </Link>
-                  <button
-                    type="button"
-                    className="block w-full text-left px-4 py-2 hover:bg-blue-50 text-blue-700"
-                    onClick={handleOrganizerDashboard}
-                  >
-                    Organizer Dashboard
-                  </button>
-                </div>
-              )}
-            </div>
-            <Link to="/create-event" className="ml-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full font-bold shadow transition">+ Create Event</Link>
-          </div>
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden focus:outline-none text-blue-700"
-            aria-label="Toggle menu"
-          >
-            {isMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
-          </button>
-        </div>
-        {/* Mobile Links */}
-        {isMenuOpen && (
-          <div className="md:hidden mt-3 flex flex-col space-y-2 text-base font-semibold text-blue-700 bg-white rounded shadow-lg px-6 py-4">
-            <Link to="/" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={() => setIsMenuOpen(false)}>Home</Link>
-            <Link to="/events" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={() => setIsMenuOpen(false)}>Browse Events</Link>
-            <Link to="/tickets" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={() => setIsMenuOpen(false)}>My Tickets</Link>
-            <Link to="/login" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={() => setIsMenuOpen(false)}>Login</Link>
-            <Link to="/register" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={() => setIsMenuOpen(false)}>Register</Link>
-            <Link to="/profile" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={() => setIsMenuOpen(false)}>Profile</Link>
-            <Link to="/create-event" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full font-bold shadow transition" onClick={() => setIsMenuOpen(false)}>+ Create Event</Link>
-            {/* Organizer Dashboard Link - Mobile */}
-            <button
-              type="button"
-              className="block w-full text-left px-4 py-2 hover:bg-blue-50 text-blue-700"
-              onClick={handleOrganizerDashboard}
-            >
-              Organizer Dashboard
-            </button>
-          </div>
-        )}
-      </nav>
-
-      {/* Hero Section with Background Image */}
+      <Navbar />
+      {/* Hero Section */}
       <section
         className="relative min-h-[90vh] bg-gradient-to-br from-blue-100 via-white to-blue-200 flex items-center justify-center text-blue-900 text-center"
       >
@@ -115,64 +194,189 @@ const Home = () => {
               type="text"
               placeholder="🔍 Search by category or location"
               className="flex-grow px-6 py-3 text-gray-700 rounded-l-full focus:outline-none"
+              value={searchInput}
+              onChange={e => setSearchInput(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  navigate(`/search?q=${encodeURIComponent(searchInput)}`);
+                }
+              }}
             />
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-r-full transition">
+            <button
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-r-full transition"
+              onClick={() => navigate(`/search?q=${encodeURIComponent(searchInput)}`)}
+            >
               Search
             </button>
           </div>
         </div>
       </section>
 
-      {/* Upcoming Events */}
+      {/* Toggle for Upcoming/All Events */}
+      <div className="flex justify-center mt-8">
+        <button
+          className={`px-4 py-2 rounded-l-full font-semibold ${!showAllEvents ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-700'}`}
+          onClick={() => { setShowAllEvents(false); setCarouselIndex(0); }}
+        >
+          Upcoming Events
+        </button>
+        <button
+          className={`px-4 py-2 rounded-r-full font-semibold ${showAllEvents ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-700'}`}
+          onClick={() => { setShowAllEvents(true); setCarouselIndex(0); }}
+        >
+          All Events
+        </button>
+      </div>
+
+      {/* Events Carousel */}
       <section className="px-6 py-12 bg-white">
-        <h2 className="text-2xl font-semibold mb-6 text-center animate-fade-in-up">Upcoming Events</h2>
-        <div className="grid gap-8 md:grid-cols-3">
-          {[1, 2, 3].map((id) => (
-            <div
-              key={id}
-              className="relative bg-white rounded-2xl shadow-lg border-t-4 border-blue-500 p-6 flex flex-col items-start hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 animate-fade-in-up"
-            >
-              {/* Date Badge */}
-              <span className="absolute top-0 right-0 mt-4 mr-4 bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full shadow">
-                25 May 2025
-              </span>
-              {/* Event Icon */}
-              <div className="mb-4 text-4xl">🎫</div>
-              <h3 className="text-lg font-bold text-blue-800 mb-2">Event Title</h3>
-              <p className="text-sm text-gray-600 leading-relaxed mb-4">
-                Name: Lorem Ipsum<br />
-                Location: Addis Ababa
-              </p>
-              <button className="mt-auto bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white px-5 py-2 rounded-full font-semibold shadow transition">
-                Buy Ticket
+        <h2 className="text-2xl font-semibold mb-6 text-center animate-fade-in-up">
+          {showAllEvents ? 'All Events' : 'Upcoming Events'}
+        </h2>
+        {(showAllEvents ? allEvents : upcomingEvents).length === 0 ? (
+          <div className="col-span-3 text-center text-gray-500">
+            No {showAllEvents ? 'events' : 'upcoming events'} found.
+          </div>
+        ) : (
+          <div className="relative max-w-4xl mx-auto">
+            <div className="flex items-center justify-center">
+              <button
+                className="p-2 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-700 mr-4"
+                onClick={() => {
+                  const eventsToShow = showAllEvents ? allEvents : upcomingEvents;
+                  setCarouselIndex((prev) =>
+                    prev === 0 ? eventsToShow.length - 1 : prev - 1
+                  );
+                }}
+                aria-label="Previous Event"
+              >
+                &#8592;
+              </button>
+              <div className="flex-1 flex gap-6 justify-center">
+                {getCarouselEvents().map((event, idx) => (
+                  <div
+                    key={event?.id || idx}
+                    className="relative bg-white rounded-2xl shadow-lg border-t-4 border-blue-500 p-6 flex flex-col items-start transition-all duration-500 animate-fade-in-up min-h-[300px] w-80"
+                  >
+                    <span className="absolute top-0 right-0 mt-4 mr-4 bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full shadow">
+                      {event?.date ? new Date(event.date).toLocaleDateString() : 'No Date'}
+                    </span>
+                    <div className="mb-4 text-4xl">🎫</div>
+                    <h3 className="text-lg font-bold text-blue-800 mb-2">
+                      {event?.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                      {event?.description}
+                      <br />
+                      <strong>Location:</strong> {event?.location}
+                    </p>
+                    <button
+                      disabled={isPastEvent(event)}
+                      onClick={() => {
+                        setSelectedEvent(event);
+                        setShowBuyModal(true);
+                      }}
+                      className="mt-auto bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white px-5 py-2 rounded-full font-semibold shadow transition"
+                    >
+                      Buy Ticket
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button
+                className="p-2 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-700 ml-4"
+                onClick={() => {
+                  const eventsToShow = showAllEvents ? allEvents : upcomingEvents;
+                  setCarouselIndex((prev) =>
+                    prev === eventsToShow.length - 1 ? 0 : prev + 1
+                  );
+                }}
+                aria-label="Next Event"
+              >
+                &#8594;
               </button>
             </div>
-          ))}
-        </div>
+            {/* Carousel indicators */}
+            <div className="flex justify-center mt-4 space-x-2">
+              {(showAllEvents ? allEvents : upcomingEvents).map((_, idx) => (
+                <button
+                  key={idx}
+                  className={`w-3 h-3 rounded-full ${carouselIndex === idx ? 'bg-blue-600' : 'bg-blue-200'}`}
+                  onClick={() => setCarouselIndex(idx)}
+                  aria-label={`Go to event ${idx + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </section>
 
-      {/* Categories */}
+      {/* Categories with Events */}
       <section className="px-6 py-12 bg-white animate-fade-in-up">
         <h2 className="text-2xl font-semibold text-center mb-6">Event Categories</h2>
         <div className="grid gap-8 md:grid-cols-3 max-w-4xl mx-auto">
-          {/* Festivals */}
-          <div className="group bg-gradient-to-br from-yellow-100 to-pink-100 p-8 rounded-2xl shadow-lg hover:scale-105 hover:shadow-2xl transition transform duration-300 cursor-pointer flex flex-col items-center">
-            <span className="text-5xl mb-4 transition group-hover:scale-110">🎉</span>
-            <h3 className="text-xl font-bold mb-2 text-pink-700">Festivals</h3>
-            <p className="text-gray-600 text-sm">Experience vibrant festivals and cultural celebrations near you.</p>
-          </div>
-          {/* Theater */}
-          <div className="group bg-gradient-to-br from-purple-100 to-blue-100 p-8 rounded-2xl shadow-lg hover:scale-105 hover:shadow-2xl transition transform duration-300 cursor-pointer flex flex-col items-center">
-            <span className="text-5xl mb-4 transition group-hover:scale-110">🎭</span>
-            <h3 className="text-xl font-bold mb-2 text-blue-700">Theater</h3>
-            <p className="text-gray-600 text-sm">Discover drama, comedy, and live performances in your city.</p>
-          </div>
-          {/* Concerts */}
-          <div className="group bg-gradient-to-br from-blue-100 to-green-100 p-8 rounded-2xl shadow-lg hover:scale-105 hover:shadow-2xl transition transform duration-300 cursor-pointer flex flex-col items-center">
-            <span className="text-5xl mb-4 transition group-hover:scale-110">🎵</span>
-            <h3 className="text-xl font-bold mb-2 text-green-700">Concerts</h3>
-            <p className="text-gray-600 text-sm">Find live music events, gigs, and concerts for every taste.</p>
-          </div>
+          {Object.keys(categoryEvents).length === 0 && (
+            <div className="col-span-3 text-center text-gray-500">No categories found.</div>
+          )}
+          {Object.entries(categoryEvents).map(([category, events]) => {
+           
+            const displayCategory = category.charAt(0).toUpperCase() + category.slice(1);
+ 
+            let icon = '🎫';
+            if (category.toLowerCase().includes('festival')) icon = '🎉';
+            else if (category.toLowerCase().includes('theater')) icon = '🎭';
+            else if (category.toLowerCase().includes('concert')) icon = '🎵';
+            else if (category.toLowerCase().includes('conference')) icon = '🏢';
+            else if (category.toLowerCase().includes('workshop')) icon = '🛠️';
+            else if (category.toLowerCase().includes('sports')) icon = '🏟️';
+            else if (category.toLowerCase().includes('art')) icon = '🎨';
+            else if (category.toLowerCase().includes('tech')) icon = '💻';
+            else if (category.toLowerCase().includes('education')) icon = '🎓';
+            else if (category.toLowerCase().includes('food')) icon = '🍽️';
+            else if (category.toLowerCase().includes('charity')) icon = '🤝';
+            else if (category.toLowerCase().includes('fashion')) icon = '👗';
+            else if (category.toLowerCase().includes('networking')) icon = '🤝‍🧑';
+            else if (category.toLowerCase().includes('business')) icon = '💼';
+            else if (category.toLowerCase().includes('health')) icon = '🏥';
+            else if (category.toLowerCase().includes('family')) icon = '👨‍👩‍👧‍👦';
+            else if (category.toLowerCase().includes('religion')) icon = '⛪';
+            else if (category.toLowerCase().includes('government')) icon = '🏛️';
+            else if (category.toLowerCase().includes('community')) icon = '🌍';
+            else if (category.toLowerCase().includes('other')) icon = '✨';
+
+            return (
+              <div
+                key={category}
+                className="group bg-gradient-to-br from-blue-100 to-green-100 p-8 rounded-2xl shadow-lg hover:scale-105 hover:shadow-2xl transition transform duration-300 cursor-pointer flex flex-col items-center"
+              >
+                <span className="text-5xl mb-4 transition group-hover:scale-110">{icon}</span>
+                <h3 className="text-xl font-bold mb-2 text-blue-700">{displayCategory}</h3>
+                <ul className="text-gray-600 text-sm w-full mt-2 space-y-2">
+                  {events.slice(0, 3).map(event => (
+                    <li key={event.id} className="border-b pb-2">
+                      <span className="font-semibold">{event.title}</span>
+                      <span className="ml-2 text-gray-500">{event.date ? new Date(event.date).toLocaleDateString() : ''}</span>
+                      <div className="text-xs">{event.location}</div>
+                    </li>
+                  ))}
+                </ul>
+                {events.length > 3 && (
+                  <Link
+                    to={`/search?q=${encodeURIComponent(category)}`}
+                    className="mt-3 text-blue-600 hover:underline text-sm font-semibold"
+                  >
+                    View All
+                  </Link>
+                )}
+                {/* Show a badge for "Other" category */}
+                {category.toLowerCase() === 'other' && (
+                  <span className="mt-2 px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold">
+                    Other Events
+                  </span>
+                )}
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -223,10 +427,11 @@ const Home = () => {
             <ul className="space-y-2 text-sm">
               <li><Link to="/" className="hover:underline text-blue-100">Home</Link></li>
               <li><Link to="/events" className="hover:underline text-blue-100">Browse Events</Link></li>
-              <li><Link to="/tickets" className="hover:underline text-blue-100">My Tickets</Link></li>
-              <li><Link to="/create-event" className="hover:underline text-blue-100">Create Event</Link></li>
+              <li><Link to="/search" className="hover:underline text-blue-100">Search Events</Link></li>
               <li><Link to="/login" className="hover:underline text-blue-100">Login</Link></li>
               <li><Link to="/register" className="hover:underline text-blue-100">Register</Link></li>
+              {/* Add organizer dashboard link if needed */}
+              {/* <li><Link to="/dashboard" className="hover:underline text-blue-100">Organizer Dashboard</Link></li> */}
             </ul>
           </div>
           {/* Contact Info */}
@@ -255,6 +460,15 @@ const Home = () => {
           <span className="ml-2">Privacy Policy</span>
         </div>
       </footer>
+
+      {/* Buy Ticket Modal (conditionally rendered) */}
+      {showBuyModal && selectedEvent && (
+        <BuyTicketModal
+          event={selectedEvent}
+          onClose={() => setShowBuyModal(false)}
+          onSuccess={() => {/* Optionally refresh tickets or events */}}
+        />
+      )}
     </div>
   );
 };

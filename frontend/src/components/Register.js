@@ -8,8 +8,6 @@ const Register = () => {
     username: '',
     email: '',
     password: '',
-    first_name: '',
-    last_name: '',
     role: 'attendee',
   });
   const [error, setError] = useState('');
@@ -22,21 +20,38 @@ const Register = () => {
     e.preventDefault();
     setError('');
     setSuccess('');
-    const res = await fetch(`${API_BASE}/register/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    });
-    const data = await res.json();
-    if (data.id) {
-      setSuccess('Registration successful! Please log in.');
-      setTimeout(() => navigate('/login'), 1500); // Redirect after 1.5s
-    } else {
-      if (typeof data === 'object' && data !== null) {
-        setError(Object.values(data).flat().join(' '));
-      } else {
-        setError(data.error || 'Registration failed');
+    try {
+      const res = await fetch(`${API_BASE}/register/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        // If response is not JSON, get text
+        data = await res.text();
       }
+
+      if (res.ok && typeof data === 'object' && data !== null && (data.id || data.username)) {
+        setSuccess('Registration successful! Redirecting to login...');
+        setTimeout(() => {
+          navigate('/login');
+        }, 1500);
+      } else {
+        // Show error from backend, whether it's a string or object
+        if (typeof data === 'object' && data !== null) {
+          setError(Object.values(data).flat().join(' '));
+        } else if (typeof data === 'string') {
+          setError(data);
+        } else {
+          setError('Registration failed. Please try again.');
+        }
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
     }
   };
 
@@ -56,32 +71,6 @@ const Register = () => {
               id="username"
               placeholder="Enter your username"
               value={form.username}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-          </div>
-          <div>
-            <label className="block text-blue-700 font-semibold mb-1" htmlFor="first_name">First Name</label>
-            <input
-              type="text"
-              name="first_name"
-              id="first_name"
-              placeholder="Enter your first name"
-              value={form.first_name}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-          </div>
-          <div>
-            <label className="block text-blue-700 font-semibold mb-1" htmlFor="last_name">Last Name</label>
-            <input
-              type="text"
-              name="last_name"
-              id="last_name"
-              placeholder="Enter your last name"
-              value={form.last_name}
               onChange={handleChange}
               required
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"

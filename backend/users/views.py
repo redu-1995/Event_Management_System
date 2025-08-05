@@ -15,6 +15,13 @@ class UserRegistrationView(generics.CreateAPIView):
     serializer_class = UserRegistrationSerializer
     permission_classes = [AllowAny]
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        # Return serialized data, not str(user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 # Login and return token + user info
 class UserLoginView(ObtainAuthToken):
     def post(self, request, *args, **kwargs):

@@ -16,14 +16,21 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-
+from Payment.views import PaymentSuccessView
+from django.conf import settings
+from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/users/', include('users.urls')),
     path('api/events/', include('events.urls')),
-    path('api/tickets/', include('tickets.urls')),
     path('api/auth/', include('djoser.urls')),
     path('api/auth/', include('djoser.urls.jwt')),
-    
+    path('api/', include('tickets.urls')),
+    path('api/payments/', include('Payment.urls')),
+    path('payment-success/', PaymentSuccessView.as_view(), name='payment-success'),
+    path('api/', include('feedback.urls')),
+
 ]
+
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 

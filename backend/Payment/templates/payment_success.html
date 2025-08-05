@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment Success</title>
+</head>
+<body>
+    <h1>Payment Successful!</h1>
+    {% if payment %}
+        <p>Thank you, {{ payment.user.username }}!</p>
+        <p>Event: {{ payment.event.title }}</p>
+        <p>Amount: {{ payment.amount }}</p>
+        <p>Status: {{ payment.chapa_status }}</p>
+        <p>Transaction Reference: {{ payment.chapa_tx_ref }}</p>
+    {% else %}
+        <p>Payment details not found.</p>
+    {% endif %}
+</body>
+</html>
