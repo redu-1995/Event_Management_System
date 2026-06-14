@@ -98,8 +98,8 @@ DATABASES = {
         'NAME': os.environ.get('DB_NAME', 'mydb'),
         'USER': os.environ.get('DB_USER', 'myuser'),
         'PASSWORD': os.environ.get('DB_PASSWORD', 'mypass'),
-        'HOST': os.environ.get('DB_HOST', 'db'),  # IMPORTANT: 'db' = Docker service name
-        'PORT': os.environ.get('DB_PORT', '5432'),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),  
+        'PORT': os.environ.get('DB_PORT', '5433'),
     }
 }
 
