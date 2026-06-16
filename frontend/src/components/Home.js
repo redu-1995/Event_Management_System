@@ -1,39 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
 import Navbar from './Navbar';
 import BuyTicketModal from './BuyTicketModal';
 
 const Home = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [profileDropdown, setProfileDropdown] = useState(false);
   const [searchInput, setSearchInput] = useState('');
   const [allEvents, setAllEvents] = useState([]);
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [categoryEvents, setCategoryEvents] = useState({});
-  const [authChanged, setAuthChanged] = useState(false);
   const [showAllEvents, setShowAllEvents] = useState(false);
   const [showBuyModal, setShowBuyModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const navigate = useNavigate();
-
-  // Logout handler
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setIsMenuOpen(false);
-    setAuthChanged(a => !a); // force re-render
-    navigate('/');
-  };
-
-  // Get user from localStorage
-  let user = null;
-  try {
-    user = JSON.parse(localStorage.getItem('user'));
-  } catch {
-    user = null;
-  }
 
   // Helper: is event in the past?
   const isPastEvent = (event) => {
@@ -69,7 +49,7 @@ const Home = () => {
       }
     };
     fetchEvents();
-  }, [authChanged]);
+  }, []);
 
   // Carousel auto-advance
   useEffect(() => {
@@ -81,7 +61,6 @@ const Home = () => {
     return () => clearInterval(interval);
   }, [upcomingEvents, allEvents, showAllEvents]);
 
-  
   useEffect(() => {
     const handleClick = (e) => {
       if (!e.target.closest('.profile-dropdown')) setProfileDropdown(false);
@@ -90,88 +69,18 @@ const Home = () => {
     return () => document.removeEventListener('mousedown', handleClick);
   }, [profileDropdown]);
 
+  const getCarouselEvents = () => {
+    const eventsToShow = showAllEvents ? allEvents : upcomingEvents;
+    if (eventsToShow.length === 0) return [];
 
- const getCarouselEvents = () => {
-  const eventsToShow = showAllEvents ? allEvents : upcomingEvents;
-  if (eventsToShow.length === 0) return [];
+    const visibleCount = Math.min(3, eventsToShow.length); 
+    const events = [];
 
-  const visibleCount = Math.min(3, eventsToShow.length); 
-  const events = [];
-
-  for (let i = 0; i < visibleCount; i++) {
-    events.push(eventsToShow[(carouselIndex + i) % eventsToShow.length]);
-  }
-
-  return events;
-};
-
-
-  // Navbar links logic (unchanged)
-  const renderNavLinks = () => {
-    if (!user) {
-      return (
-        <>
-          <Link to="/" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Home</Link>
-          <Link to="/events" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Browse Events</Link>
-          <Link to="/search" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Search Events</Link>
-          <Link to="/register" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Register</Link>
-          <Link to="/login" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Login</Link>
-        </>
-      );
+    for (let i = 0; i < visibleCount; i++) {
+      events.push(eventsToShow[(carouselIndex + i) % eventsToShow.length]);
     }
-    return (
-      <>
-        <Link to="/" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Home</Link>
-        <Link to="/events" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Browse Events</Link>
-        <Link to="/search" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Search Events</Link>
-        {user.role === 'organizer' && (
-          <Link to="/dashboard" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Dashboard</Link>
-        )}
-        {user.role === 'attendee' && (
-          <Link to="/profile" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Profile</Link>
-        )}
-        <button
-          onClick={handleLogout}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded transition ml-2"
-        >
-          Logout
-        </button>
-      </>
-    );
-  };
 
-  // Mobile nav links (unchanged)
-  const renderMobileLinks = () => {
-    if (!user) {
-      return (
-        <>
-          <Link to="/" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={() => setIsMenuOpen(false)}>Home</Link>
-          <Link to="/events" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={() => setIsMenuOpen(false)}>Browse Events</Link>
-          <Link to="/search" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={() => setIsMenuOpen(false)}>Search Events</Link>
-          <Link to="/register" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={() => setIsMenuOpen(false)}>Register</Link>
-          <Link to="/login" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={() => setIsMenuOpen(false)}>Login</Link>
-        </>
-      );
-    }
-    return (
-      <>
-        <Link to="/" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={() => setIsMenuOpen(false)}>Home</Link>
-        <Link to="/events" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={() => setIsMenuOpen(false)}>Browse Events</Link>
-        <Link to="/search" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={() => setIsMenuOpen(false)}>Search Events</Link>
-        {user.role === 'organizer' && (
-          <Link to="/dashboard" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={() => setIsMenuOpen(false)}>Dashboard</Link>
-        )}
-        {user.role === 'attendee' && (
-          <Link to="/profile" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={() => setIsMenuOpen(false)}>Profile</Link>
-        )}
-        <button
-          onClick={handleLogout}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded transition mt-2"
-        >
-          Logout
-        </button>
-      </>
-    );
+    return events;
   };
 
   return (
@@ -319,7 +228,6 @@ const Home = () => {
             <div className="col-span-3 text-center text-gray-500">No categories found.</div>
           )}
           {Object.entries(categoryEvents).map(([category, events]) => {
-           
             const displayCategory = category.charAt(0).toUpperCase() + category.slice(1);
  
             let icon = '🎫';
@@ -368,7 +276,6 @@ const Home = () => {
                     View All
                   </Link>
                 )}
-                {/* Show a badge for "Other" category */}
                 {category.toLowerCase() === 'other' && (
                   <span className="mt-2 px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold">
                     Other Events
@@ -409,11 +316,9 @@ const Home = () => {
 
       {/* Footer */}
       <footer className="relative bg-gradient-to-r from-blue-900 via-blue-800 to-blue-700 text-white pt-12 pb-6 mt-12 overflow-hidden">
-        {/* Decorative background shapes */}
         <div className="absolute top-0 left-0 w-40 h-40 bg-blue-500 opacity-20 rounded-full blur-2xl -z-10"></div>
         <div className="absolute bottom-0 right-0 w-52 h-52 bg-blue-300 opacity-10 rounded-full blur-2xl -z-10"></div>
         <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-10 relative z-10">
-          {/* Logo & Tagline */}
           <div>
             <div className="flex items-center space-x-2 mb-2">
               <span className="text-3xl">🎟️</span>
@@ -421,7 +326,6 @@ const Home = () => {
             </div>
             <p className="text-blue-100 text-sm">Your one-stop platform for discovering and booking the best events around you.</p>
           </div>
-          {/* Quick Links */}
           <div>
             <h4 className="font-bold mb-3 text-blue-200">Quick Links</h4>
             <ul className="space-y-2 text-sm">
@@ -430,11 +334,8 @@ const Home = () => {
               <li><Link to="/search" className="hover:underline text-blue-100">Search Events</Link></li>
               <li><Link to="/login" className="hover:underline text-blue-100">Login</Link></li>
               <li><Link to="/register" className="hover:underline text-blue-100">Register</Link></li>
-              {/* Add organizer dashboard link if needed */}
-              {/* <li><Link to="/dashboard" className="hover:underline text-blue-100">Organizer Dashboard</Link></li> */}
             </ul>
           </div>
-          {/* Contact Info */}
           <div>
             <h4 className="font-bold mb-3 text-blue-200">Contact Us</h4>
             <ul className="text-sm text-blue-100 space-y-1">
@@ -443,12 +344,9 @@ const Home = () => {
               <li>Addis Ababa, Ethiopia</li>
             </ul>
           </div>
-          {/* Social Media */}
           <div>
             <h4 className="font-bold mb-3 text-blue-200">Follow Us</h4>
-            <div className="flex space-x-4 mt-2">
-              {/* ...social icons as before... */}
-            </div>
+            <div className="flex space-x-4 mt-2"></div>
             <div className="mt-4 text-blue-100 text-xs">
               <p>Stay connected for updates and exclusive offers!</p>
             </div>
@@ -461,7 +359,7 @@ const Home = () => {
         </div>
       </footer>
 
-      {/* Buy Ticket Modal (conditionally rendered) */}
+      {/* Buy Ticket Modal */}
       {showBuyModal && selectedEvent && (
         <BuyTicketModal
           event={selectedEvent}

@@ -189,7 +189,7 @@ const SearchEvents = () => {
                 {event.description}<br />
                 <strong>Location:</strong> {event.location}<br />
                 <strong>Category:</strong> {event.category && event.category.charAt(0).toUpperCase() + event.category.slice(1)}<br />
-                  <strong>Price:</strong> {event.price ? `ETB${event.price}` : 'Free'}
+                <strong>Price:</strong> {event.price ? `ETB ${event.price}` : 'Free'}
               </p>
               <button
                 className="mt-auto bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white px-5 py-2 rounded-full font-semibold shadow transition"
@@ -205,7 +205,7 @@ const SearchEvents = () => {
         <BuyTicketModal
           event={selectedEvent}
           onClose={() => setShowBuyModal(false)}
-          onSuccess={() => {}}
+          onSuccess={handleBuySuccess}
         />
       )}
     </>

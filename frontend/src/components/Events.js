@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
-import Navbar from './Navbar'; // <-- Import Navbar
+import Navbar from './Navbar'; 
 
 const EVENTS_PER_PAGE = 3;
 
@@ -11,7 +9,6 @@ const Events = () => {
   const [category, setCategory] = useState('');
   const [location, setLocation] = useState('');
   const [sort, setSort] = useState('date');
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -55,9 +52,6 @@ const Events = () => {
     (page - 1) * EVENTS_PER_PAGE,
     page * EVENTS_PER_PAGE
   );
-
-  // Responsive: Hide menu on link click (mobile)
-  const handleMenuLink = () => setIsMenuOpen(false);
 
   return (
     <div className="font-sans text-gray-800 bg-blue-50 min-h-screen">
@@ -130,7 +124,6 @@ const Events = () => {
               </p>
               <p className="text-sm text-gray-600 leading-relaxed mb-2">
                 <span className="font-semibold">Price:</span> ETB{event.price || 'N/A'}
-
               </p>
               <p className="text-sm text-gray-600 leading-relaxed mb-4">{event.description}</p>
               <button
@@ -189,8 +182,6 @@ const Events = () => {
             <p className="mb-2"><span className="font-semibold">Location:</span> {selectedEvent.location}</p>
             <p className="mb-2"><span className="font-semibold">Category:</span> {selectedEvent.category}</p>
             <p className="mb-2"><span className="font-semibold">Price:</span> ${selectedEvent.price || 'N/A'}</p>
-            
-            
           </div>
         </div>
       )}

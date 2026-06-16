@@ -6,7 +6,6 @@ import { Menu, X } from 'lucide-react';
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
-  const [authChanged, setAuthChanged] = useState(false);
 
   let user = null;
   try {
@@ -19,7 +18,6 @@ const Navbar = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setIsMenuOpen(false);
-    setAuthChanged(a => !a);
     navigate('/');
   };
 
@@ -46,7 +44,7 @@ const Navbar = () => {
         {user.role === 'attendee' && (
           <Link to="/profile" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Profile</Link>
         )}
-         {user.role === 'attendee' && (
+        {user.role === 'attendee' && (
           <Link to="/feedback/:eventId" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Feedback</Link>
         )}
         <button

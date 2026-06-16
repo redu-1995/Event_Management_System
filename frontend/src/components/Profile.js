@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import Navbar from './Navbar';
 import BuyTicketModal from './BuyTicketModal';
 
@@ -33,7 +33,8 @@ const Profile = () => {
     fetchEvents();
   }, []);
 
-  const fetchTickets = async () => {
+  // Memorize fetchTickets using useCallback
+  const fetchTickets = useCallback(async () => {
     setLoadingTickets(true);
     setTicketError('');
     const token = localStorage.getItem('token');
@@ -56,11 +57,12 @@ const Profile = () => {
       setTicketError('Could not load tickets.');
     }
     setLoadingTickets(false);
-  };
+  }, [user?.id]); // Only recreate if user ID changes
 
+  // Safely include fetchTickets in dependencies now
   useEffect(() => {
     if (user) fetchTickets();
-  }, [user]);
+  }, [user, fetchTickets]);
 
   const handleBuySuccess = () => {
     fetchTickets();
@@ -105,26 +107,25 @@ const Profile = () => {
           <div className="text-gray-500">You have not purchased any tickets yet.</div>
         )}
         <div className="flex flex-row gap-6 overflow-x-auto pb-2">
-                {tickets.map(ticket => (
-          <div
-            key={ticket.id}
-            className="min-w-[260px] max-w-xs bg-gradient-to-br from-blue-100 to-blue-50 rounded-xl shadow-md p-5 flex flex-col items-start border-t-4 border-blue-400"
-          >
-           <div className="font-semibold text-blue-800 text-lg mb-2">
+          {tickets.map(ticket => (
+            <div
+              key={ticket.id}
+              className="min-w-[260px] max-w-xs bg-gradient-to-br from-blue-100 to-blue-50 rounded-xl shadow-md p-5 flex flex-col items-start border-t-4 border-blue-400"
+            >
+              <div className="font-semibold text-blue-800 text-lg mb-2">
                 {ticket.event_info?.title || 'Event Title'}
               </div>
-            <div className="text-sm text-gray-600 mb-1">
-              <strong>Location:</strong> {ticket.event_info?.location || 'Unknown'}
+              <div className="text-sm text-gray-600 mb-1">
+                <strong>Location:</strong> {ticket.event_info?.location || 'Unknown'}
+              </div>
+              <div className="text-sm text-gray-600 mb-1">
+                <strong>Category:</strong> {ticket.event_info?.category || 'General'}
+              </div>
+              <div className="text-xs text-gray-400 mt-2">
+                <strong>Purchased:</strong> {ticket.purchase_date ? new Date(ticket.purchase_date).toLocaleString() : 'N/A'}
+              </div>
             </div>
-            <div className="text-sm text-gray-600 mb-1">
-              <strong>Category:</strong> {ticket.event_info?.category || 'General'}
-            </div>
-            <div className="text-xs text-gray-400 mt-2">
-              <strong>Purchased:</strong> {ticket.purchase_date ? new Date(ticket.purchase_date).toLocaleString() : 'N/A'}
-            </div>
-          </div>
-        ))}
-
+          ))}
         </div>
       </div>
 
