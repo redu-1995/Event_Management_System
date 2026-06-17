@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+
 const BuyTicketModal = ({ event, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -14,8 +17,9 @@ const BuyTicketModal = ({ event, onClose }) => {
         return;
       }
       try {
+      
         const response = await fetch(
-          `http://127.0.0.1:8000/api/tickets/exists/?event_id=${event.id}`,
+          `${API_BASE_URL}/api/tickets/exists/?event_id=${event.id}`,
           {
             headers: {
               Authorization: `Token ${token}`,
@@ -25,7 +29,6 @@ const BuyTicketModal = ({ event, onClose }) => {
         const data = await response.json();
         setHasTicket(data.has_ticket);
       } catch (err) {
-        // Could log error or show a message here if needed
         setHasTicket(false);
       } finally {
         setCheckingTicket(false);
@@ -56,7 +59,8 @@ const BuyTicketModal = ({ event, onClose }) => {
     }
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/payments/chapa/init/', {
+      // === 3. UPDATE THE CHAPA PAYMENT URL USING BACKTICKS ===
+      const response = await fetch(`${API_BASE_URL}/api/payments/chapa/init/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -85,6 +89,8 @@ const BuyTicketModal = ({ event, onClose }) => {
       setLoading(false);
     }
   };
+
+  
 
   if (!event) return null;
 

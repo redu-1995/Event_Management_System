@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from './Navbar';
 
+// === 1. DEFINE THE DYNAMIC ENV SETUP AT THE TOP ===
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+
 const FeedbackForm = ({ onFeedbackSubmitted }) => {
   const [comment, setComment] = useState('');
   const [rating, setRating] = useState(5);
@@ -13,10 +16,10 @@ const FeedbackForm = ({ onFeedbackSubmitted }) => {
     const fetchUserEvents = async () => {
       const token = localStorage.getItem('token');
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/events/', {
+        // === 2. UPDATE THE EVENT GET REQUEST WITH BACKTICKS ===
+        const response = await fetch(`${API_BASE_URL}/api/events/`, {
           headers: {
             'Authorization': `Token ${token}`,
-
           }
         });
         if (!response.ok) throw new Error('Failed to load events');
@@ -41,7 +44,8 @@ const FeedbackForm = ({ onFeedbackSubmitted }) => {
     }
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/events/${selectedEventId}/feedback/`, {
+      // === 3. UPDATE THE FEEDBACK POST ROUTE WITH BACKTICKS ===
+      const response = await fetch(`${API_BASE_URL}/api/events/${selectedEventId}/feedback/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -55,8 +59,7 @@ const FeedbackForm = ({ onFeedbackSubmitted }) => {
         throw new Error(
           data.detail || data.non_field_errors?.[0] || 'Failed to submit feedback'
         );
-}
-
+      }
 
       setSuccess('Feedback submitted successfully!');
       setComment('');
@@ -68,6 +71,8 @@ const FeedbackForm = ({ onFeedbackSubmitted }) => {
       setSuccess('');
     }
   };
+
+  
 
   return (
     <div className="font-sans text-gray-800 bg-blue-50 min-h-screen">

@@ -3,6 +3,9 @@ import { useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
 import BuyTicketModal from './BuyTicketModal';
 
+// === 1. DEFINE YOUR UNIFIED ENV FALLBACK AT THE TOP ===
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+
 const SearchEvents = () => {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
@@ -22,7 +25,8 @@ const SearchEvents = () => {
   useEffect(() => {
     const fetchAllEvents = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/events/');
+        // === 2. UPDATE SUGGESTIONS ENDPOINT WITH BACKTICKS ===
+        const response = await fetch(`${API_BASE_URL}/api/events/`);
         if (!response.ok) throw new Error('Failed to fetch events');
         const data = await response.json();
         setAllEvents(data);
@@ -38,7 +42,8 @@ const SearchEvents = () => {
       setLoading(true);
       setError('');
       try {
-        let url = 'http://127.0.0.1:8000/api/events/';
+        // === 3. UPDATE QUERY INGESTION LINK WITH BACKTICKS ===
+        let url = `${API_BASE_URL}/api/events/`;
         if (initialQuery) {
           url += `?search=${encodeURIComponent(initialQuery)}`;
         }
@@ -62,8 +67,9 @@ const SearchEvents = () => {
     setError('');
     try {
       const q = customQuery !== undefined ? customQuery : query;
+      // === 4. UPDATE EVENT SEARCH DISPATCH WITH BACKTICKS ===
       const response = await fetch(
-        `http://127.0.0.1:8000/api/events/?search=${encodeURIComponent(q)}`
+        `${API_BASE_URL}/api/events/?search=${encodeURIComponent(q)}`
       );
       if (!response.ok) throw new Error('Failed to fetch events');
       const data = await response.json();
@@ -108,6 +114,8 @@ const SearchEvents = () => {
     setSuccessMsg('Ticket purchased successfully!');
     setTimeout(() => setSuccessMsg(''), 3000);
   };
+
+ 
 
   return (
     <>

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const API_BASE = 'http://localhost:8000/api/users';
+// === 1. REPLACE THE HARDCODED URL WITH THIS DYNAMIC ENV SETUP ===
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE = `${API_BASE_URL}/api/users`;
 
 const Login = ({ onAuth }) => {
   const [form, setForm] = useState({ username: '', password: '' });
@@ -15,18 +17,22 @@ const Login = ({ onAuth }) => {
     e.preventDefault();
     setError('');
     setRedirecting(false);
+    
+    // This will now automatically use your dynamic base URL
     const res = await fetch(`${API_BASE}/login/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form),
     });
+    
     const data = await res.json();
     if (data.token) {
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
       if (onAuth) onAuth();
       setRedirecting(true);
-      // Redirect based on user role
+      
+      
       setTimeout(() => {
         if (data.user.role === 'attendee') {
           navigate('/profile');
@@ -40,6 +46,8 @@ const Login = ({ onAuth }) => {
       setError(data.error || 'Login failed');
     }
   };
+
+ 
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-blue-200">

@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
+// === 1. DEFINE THE DYNAMIC ENV SETUP AT THE TOP ===
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const PaymentSuccess = () => {
   const [status, setStatus] = useState('verifying');
@@ -18,8 +20,9 @@ const PaymentSuccess = () => {
 
     const verifyPayment = async () => {
       try {
+        // === 2. INJECT THE DYNAMIC ENVIRONMENT VARIABLE HERE ===
         const response = await fetch(
-          `http://localhost:8000/api/payments/chapa/verify/?tx_ref=${tx_ref}`
+          `${API_BASE_URL}/api/payments/chapa/verify/?tx_ref=${tx_ref}`
         );
         const data = await response.json();
 
@@ -50,10 +53,11 @@ const PaymentSuccess = () => {
         return (
           <div className="bg-white rounded-xl shadow-md p-8 max-w-lg mx-auto text-center space-y-4">
             <h2 className="text-3xl font-bold text-green-600">✅ Payment Successful!</h2>
-            <p className="text-gray-700"><strong>Event:</strong> {details.event}</p>
-            <p className="text-gray-700"><strong>User:</strong> {details.user}</p>
-            <p className="text-gray-700"><strong>Amount:</strong> {details.amount} ETB</p>
-            <p className="text-gray-700"><strong>Reference:</strong> {details.tx_ref}</p>
+            {/* Safe access using optional chaining to protect against rendering before state data loads */}
+            <p className="text-gray-700"><strong>Event:</strong> {details?.event}</p>
+            <p className="text-gray-700"><strong>User:</strong> {details?.user}</p>
+            <p className="text-gray-700"><strong>Amount:</strong> {details?.amount} ETB</p>
+            <p className="text-gray-700"><strong>Reference:</strong> {details?.tx_ref}</p>
             <div className="mt-4">
               <a href="/" className="inline-block bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
                 Back to Home

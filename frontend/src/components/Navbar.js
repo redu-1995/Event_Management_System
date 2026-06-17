@@ -1,4 +1,3 @@
-// src/components/Navbar.jsx
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
@@ -45,7 +44,8 @@ const Navbar = () => {
           <Link to="/profile" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Profile</Link>
         )}
         {user.role === 'attendee' && (
-          <Link to="/feedback/:eventId" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Feedback</Link>
+          // === FIX 1: ROUTE DIRECTLY TO /feedback TO MATCH YOUR FEEDBACKFORM SELECTION DESIGN ===
+          <Link to="/feedback" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Feedback</Link>
         )}
         <button
           onClick={handleLogout}
@@ -79,6 +79,10 @@ const Navbar = () => {
         )}
         {user.role === 'attendee' && (
           <Link to="/profile" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={() => setIsMenuOpen(false)}>Profile</Link>
+        )}
+        {user.role === 'attendee' && (
+          // === FIX 2: ADD FEEDBACK OPTION TO MOBILE MENUS SO IT IS NOT DESKTOP-ONLY ===
+          <Link to="/feedback" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={() => setIsMenuOpen(false)}>Feedback</Link>
         )}
         <button
           onClick={handleLogout}

@@ -2,6 +2,9 @@ import React, { useEffect, useState, useCallback } from 'react';
 import Navbar from './Navbar';
 import BuyTicketModal from './BuyTicketModal';
 
+// === 1. CONFIGURE THE ENVIRONMENT BASE VARIABLE AT THE TOP ===
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+
 const Profile = () => {
   const [user, setUser] = useState(null);
   const [tickets, setTickets] = useState([]);
@@ -22,7 +25,8 @@ const Profile = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/events/');
+        // === 2. UPDATE THE STATIC FETCH WITH BACKTICKS ===
+        const response = await fetch(`${API_BASE_URL}/api/events/`);
         if (!response.ok) throw new Error('Failed to fetch events');
         const data = await response.json();
         setAllEvents(data);
@@ -44,7 +48,8 @@ const Profile = () => {
       return;
     }
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/tickets/', {
+      // === 3. UPDATE THE TICKETS NETWORK PATH WITH BACKTICKS ===
+      const res = await fetch(`${API_BASE_URL}/api/tickets/`, {
         headers: { Authorization: `Token ${token}` },
       });
       if (!res.ok) throw new Error('Failed to fetch tickets');
@@ -68,6 +73,7 @@ const Profile = () => {
     fetchTickets();
   };
 
+  
   if (!user) {
     return (
       <>
