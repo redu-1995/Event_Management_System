@@ -5,11 +5,15 @@ set -e
 echo "Running database migrations..."
 python manage.py migrate --noinput
 
-# --- ADD THIS NEW BLOCK ---
+# --- UPDATE THIS BLOCK IN YOUR entrypoint.sh ---
 echo "Creating superuser if it doesn't exist..."
 python -c "
 import os
 import django
+
+# Tell Django where your settings file is (core is your project folder name)
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
+
 django.setup()
 from django.contrib.auth import get_user_model
 User = get_user_model()
@@ -23,6 +27,6 @@ if not User.objects.filter(username=username).exists():
 else:
     print('Superuser already exists.')
 "
-# --------------------------
+# ------------------------------------------------
 
 exec "$@"
