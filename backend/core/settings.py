@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from decouple import config, Csv
 
+import dj_database_url
 
 FRONTEND_URL = config("FRONTEND_URL", default="http://localhost:3000")
 # Base directory
@@ -93,14 +94,9 @@ TEMPLATES = [
 WSGI_APPLICATION = 'core.wsgi.application'
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME', 'mydb'),
-        'USER': os.environ.get('DB_USER', 'myuser'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', 'mypass'),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),  
-        'PORT': os.environ.get('DB_PORT', '5433'),
-    }
+    "default": dj_database_url.config(
+        default=config("DATABASE_URL")
+    )
 }
 
 # Password validation
@@ -146,5 +142,5 @@ CORS_ALLOWED_ORIGINS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Chapa settings
-CHAPA_SECRET_KEY = 'CHASECK_TEST-Lt3wu47J0VoAQUuRNXL6qR7Y43kTWBpE'
+CHAPA_SECRET_KEY = config("CHAPA_SECRET_KEY")
 CHAPA_BASE_URL = 'https://api.chapa.co/v1'
