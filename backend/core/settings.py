@@ -4,7 +4,7 @@ from decouple import config, Csv
 
 import dj_database_url
 
-FRONTEND_URL = config("FRONTEND_URL", default="http://localhost:3000")
+FRONTEND_URL = config("FRONTEND_URL", default="http://localhost:3000").rstrip('/')
 # Base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
 
