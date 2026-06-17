@@ -23,29 +23,51 @@ class UserRegistrationView(generics.CreateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 # Login and return token + user info
+import traceback
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 class UserLoginView(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
-        response = super().post(request, *args, **kwargs)
-        token_key = response.data.get('token')
-
-        if not token_key:
-            return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
-
         try:
+            print("LOGIN REQUEST RECEIVED")
+            print(request.data)
+
+            response = super().post(request, *args, **kwargs)
+
+            print("TOKEN RESPONSE:", response.data)
+
+            token_key = response.data.get('token')
+
+            if not token_key:
+                return Response(
+                    {'error': 'Invalid credentials'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
             token = Token.objects.get(key=token_key)
             user = token.user
-        except Token.DoesNotExist:
-            return Response({'error': 'Token not found'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        return Response({
-            'token': token.key,
-            'user': {
-                'id': user.id,
-                'username': user.username,
-                'email': user.email,
-                'role': user.role
-            }
-        })
+            return Response({
+                'token': token.key,
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'role': user.role
+                }
+            })
+
+        except Exception as e:
+            print("LOGIN ERROR:", str(e))
+            traceback.print_exc()
+
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 # Logout a user by deleting their token
 class UserLogoutView(APIView):
