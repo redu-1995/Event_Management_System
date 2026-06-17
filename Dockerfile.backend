@@ -12,4 +12,10 @@ RUN pip install -r requirements.txt
 
 COPY backend/ .
 
+# --- ADD THESE NEW LINES ---
+# Make sure entrypoint.sh is executable before running it
+RUN chmod +x /app/entrypoint.sh
+ENTRYPOINT ["/app/entrypoint.sh"]
+# ---------------------------
+
 CMD gunicorn core.wsgi:application --bind 0.0.0.0:$PORT
