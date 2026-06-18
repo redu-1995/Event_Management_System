@@ -16,9 +16,10 @@ SECRET_KEY = config('SECRET_KEY', default='your-default-secret-key')
 DEBUG = config('DEBUG', default=True, cast=bool)
 
 # Allowed hosts
+# ✅ CORRECTED (Pure domain names only, no https:// and no trailing slash)
 ALLOWED_HOSTS = config(
     'ALLOWED_HOSTS', 
-    default='localhost,127.0.0.1,https://event-management-system-40aw.onrender.com/', 
+    default='localhost,127.0.0.1,event-management-system-40aw.onrender.com', 
     cast=Csv()
 )
 
