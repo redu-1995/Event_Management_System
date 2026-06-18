@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Navbar from './Navbar';
 
 // === 1. DEFINE THE DYNAMIC ENV SETUP AT THE TOP ===
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
-
+// Change from import.meta.env.VITE_API_URL to process.env.REACT_APP_API_URL
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000';
 const FeedbackForm = ({ onFeedbackSubmitted }) => {
   const [comment, setComment] = useState('');
   const [rating, setRating] = useState(5);

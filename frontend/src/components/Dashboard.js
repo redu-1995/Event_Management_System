@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from './Navbar';
 
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+// Change from import.meta.env.VITE_API_URL to process.env.REACT_APP_API_URL
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000';
 const API_URL = `${API_BASE_URL}/api/events/`;
 
 const Dashboard = () => {

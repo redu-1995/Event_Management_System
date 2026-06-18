@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'; // === 1. IMPORT YOUR CENTRAL CONTEXT HOOK ===
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+// Change from import.meta.env.VITE_API_URL to process.env.REACT_APP_API_URL
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000';
 const API_BASE = `${API_BASE_URL}/api/users`;
 
 const Auth = () => {
