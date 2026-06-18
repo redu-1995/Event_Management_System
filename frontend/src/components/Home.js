@@ -3,6 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
 import BuyTicketModal from './BuyTicketModal';
 
+// === 1. REPLACE THE HARDCODED STAGING STRINGS WITH THIS SETUP ===
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+
 const Home = () => {
   const [profileDropdown, setProfileDropdown] = useState(false);
   const [searchInput, setSearchInput] = useState('');
@@ -25,7 +28,8 @@ const Home = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/events/');
+        // === 2. INJECT THE VARIABLE INTO YOUR SEED GET REQUEST ===
+        const response = await fetch(`${API_BASE_URL}/api/events/`);
         if (!response.ok) throw new Error('Failed to fetch events');
         const data = await response.json();
         setAllEvents(data);
@@ -51,7 +55,7 @@ const Home = () => {
     fetchEvents();
   }, []);
 
-  // Carousel auto-advance
+
   useEffect(() => {
     const eventsToShow = showAllEvents ? allEvents : upcomingEvents;
     if (eventsToShow.length === 0) return;

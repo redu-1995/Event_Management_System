@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const API_BASE = 'http://localhost:8000/api/users';
+// === 1. REPLACE THE HARDCODED STAGING URL WITH VITE ENVIRONMENT VARIABLES ===
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE = `${API_BASE_URL}/api/users`;
 
 const Register = () => {
   const [form, setForm] = useState({
@@ -21,6 +23,7 @@ const Register = () => {
     setError('');
     setSuccess('');
     try {
+      // This endpoint string will now automatically scale across development and production targets
       const res = await fetch(`${API_BASE}/register/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -31,7 +34,6 @@ const Register = () => {
       try {
         data = await res.json();
       } catch {
-        // If response is not JSON, get text
         data = await res.text();
       }
 
@@ -41,7 +43,6 @@ const Register = () => {
           navigate('/login');
         }, 1500);
       } else {
-        // Show error from backend, whether it's a string or object
         if (typeof data === 'object' && data !== null) {
           setError(Object.values(data).flat().join(' '));
         } else if (typeof data === 'string') {
@@ -54,6 +55,8 @@ const Register = () => {
       setError('Network error. Please try again.');
     }
   };
+
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-blue-200">

@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext'; // === 1. IMPORT YOUR CENTRAL CONTEXT HOOK ===
 
-const API_BASE = 'http://localhost:8000/api/users';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE = `${API_BASE_URL}/api/users`;
 
-const Auth = ({ onAuth }) => {
+const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const { login } = useAuth(); // === 2. EXTRACT CENTRALIZED DISPATCH FROM CONTEXT ===
+  
   const [form, setForm] = useState({
     username: '',
     email: '',
@@ -23,44 +27,52 @@ const Auth = ({ onAuth }) => {
     e.preventDefault();
     setError('');
     setSuccess('');
+    
     if (isLogin) {
-      // Login
-      const res = await fetch(`${API_BASE}/login/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: form.username,
-          password: form.password,
-        }),
-      });
-      const data = await res.json();
-      if (data.token) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        if (onAuth) onAuth();
-        navigate('/'); // Redirect to home page after login
-      } else {
-        setError(data.error || 'Login failed');
+      // Login Flow
+      try {
+        const res = await fetch(`${API_BASE}/login/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: form.username,
+            password: form.password,
+          }),
+        });
+        const data = await res.json();
+        
+        if (data.token) {
+          // === 3. USE CONTEXT STATE TO UPDATE THE WHOLE APPLICATION INSTANTLY ===
+          login(data.user, data.token);
+          navigate('/'); 
+        } else {
+          setError(data.error || 'Login failed');
+        }
+      } catch {
+        setError('Network error during login.');
       }
     } else {
-      // Register
-      const res = await fetch(`${API_BASE}/register/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
-      const data = await res.json();
-      if (data.id) {
-        setIsLogin(true); // Switch to login form
-        setSuccess('Registration successful! Please log in.');
-        navigate('/login'); // Redirect to login page after registration
-      } else {
-        // Show all error messages from backend
-        if (typeof data === 'object' && data !== null) {
-          setError(Object.values(data).flat().join(' '));
+      // Register Flow
+      try {
+        const res = await fetch(`${API_BASE}/register/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(form),
+        });
+        const data = await res.json();
+        
+        if (data.id) {
+          setIsLogin(true); 
+          setSuccess('Registration successful! Please log in.');
         } else {
-          setError(data.error || 'Registration failed');
+          if (typeof data === 'object' && data !== null) {
+            setError(Object.values(data).flat().join(' '));
+          } else {
+            setError(data.error || 'Registration failed');
+          }
         }
+      } catch {
+        setError('Network error during registration.');
       }
     }
   };
@@ -154,7 +166,6 @@ const Auth = ({ onAuth }) => {
               >
                 <option value="attendee">Attendee</option>
                 <option value="organizer">Organizer</option>
-                <option value="admin">Admin</option>
               </select>
             </div>
           )}

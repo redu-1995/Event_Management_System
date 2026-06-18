@@ -1,22 +1,15 @@
-// src/components/Navbar.jsx
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
+import { useAuth } from '../context/AuthContext'; // === 1. IMPORT YOUR CENTRAL CONTEXT HOOK ===
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, logout } = useAuth(); // === 2. EXTRACT RE-ACTIVE USER DATA & LOGOUT DISPATCH ===
   const navigate = useNavigate();
 
-  let user = null;
-  try {
-    user = JSON.parse(localStorage.getItem('user'));
-  } catch {
-    user = null;
-  }
-
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    logout(); // === 3. USE CONTEXT LOGOUT METHOD TO WIPE SESSIONS GLOBALLY ===
     setIsMenuOpen(false);
     navigate('/');
   };
@@ -45,7 +38,7 @@ const Navbar = () => {
           <Link to="/profile" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Profile</Link>
         )}
         {user.role === 'attendee' && (
-          <Link to="/feedback/:eventId" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Feedback</Link>
+          <Link to="/feedback" className="text-blue-700 hover:bg-blue-50 px-3 py-2 rounded transition">Feedback</Link>
         )}
         <button
           onClick={handleLogout}
@@ -80,9 +73,12 @@ const Navbar = () => {
         {user.role === 'attendee' && (
           <Link to="/profile" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={() => setIsMenuOpen(false)}>Profile</Link>
         )}
+        {user.role === 'attendee' && (
+          <Link to="/feedback" className="hover:bg-blue-50 px-3 py-2 rounded transition" onClick={() => setIsMenuOpen(false)}>Feedback</Link>
+        )}
         <button
           onClick={handleLogout}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded transition mt-2"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded transition mt-2 text-left"
         >
           Logout
         </button>

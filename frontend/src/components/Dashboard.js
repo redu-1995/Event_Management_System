@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from './Navbar';
 
-const API_URL = 'http://localhost:8000/api/events/';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_URL = `${API_BASE_URL}/api/events/`;
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
@@ -14,6 +16,7 @@ const Dashboard = () => {
     date: '',
     location: '',
     category: '',
+    price: '', 
   });
   const [editId, setEditId] = useState(null);
   const [loading, setLoading] = useState(false);

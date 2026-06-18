@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from './Navbar'; 
 
+// === 1. ADD THIS LINE RIGHT HERE ===
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+
 const EVENTS_PER_PAGE = 3;
 
 const Events = () => {
@@ -18,7 +21,9 @@ const Events = () => {
     const fetchEvents = async () => {
       setLoading(true);
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/events/');
+        // === 2. MODIFY THIS FETCH LINE TO USE BACKTICKS AND THE VARIABLE ===
+        const response = await fetch(`${API_BASE_URL}/api/events/`);
+        
         if (!response.ok) throw new Error('Failed to fetch events');
         const data = await response.json();
         setEvents(data);
@@ -30,7 +35,7 @@ const Events = () => {
     fetchEvents();
   }, []);
 
-  // Filtering
+ 
   let filteredEvents = events.filter(event =>
     (event.title.toLowerCase().includes(search.toLowerCase()) ||
       event.description.toLowerCase().includes(search.toLowerCase())) &&
