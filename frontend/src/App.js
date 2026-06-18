@@ -11,23 +11,28 @@ import PaymentSuccess from './components/PaymentSuccess';
 import FeedbackForm from './components/FeedbackForm';
 import './output.css';
 
-
+// ==========================================
+// 1. ROBUST PROTECTED ROUTE INTERCEPTOR
+// ==========================================
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const token = localStorage.getItem('token');
   let user = null;
 
   try {
-    user = JSON.parse(localStorage.getItem('user'));
-  } catch {
+    const savedUser = localStorage.getItem('user');
+    // Guard against stringified "undefined" or empty states
+    user = savedUser && savedUser !== 'undefined' ? JSON.parse(savedUser) : null;
+  } catch (error) {
+    console.error("Failed to parse user session metadata:", error);
     user = null;
   }
 
-  // Not logged in -> Boot to login page
+  // Not logged in -> Boot cleanly to login page
   if (!token || !user) {
     return <Navigate to="/login" replace />;
   }
 
-  // Logged in but wrong role permissions -> Boot back to public home
+  // Logged in but lacks role permissions -> Boot back to public home
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     return <Navigate to="/" replace />;
   }
@@ -42,7 +47,8 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 function App() {
   return (
     <Router>
-      <div className="p-4">
+      {/* Structural Semantic Landmark Fix */}
+      <main className="p-4">
         <Routes>
           {/* === PUBLIC ROUTES === */}
           <Route path="/" element={<Home />} />
@@ -63,7 +69,6 @@ function App() {
             } 
           />
           
-          {/* Unified Feedback handlers: Accommodates both general form browsing & item deep-links */}
           <Route 
             path="/feedback" 
             element={
@@ -92,10 +97,9 @@ function App() {
           />
 
           {/* === FALLBACK CATCH-ALL === */}
-          {/* If a user enters a completely random URL, send them back to Home safely */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </div>
+      </main>
     </Router>
   );
 }
