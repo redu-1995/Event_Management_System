@@ -73,19 +73,30 @@ const Home = () => {
     return () => document.removeEventListener('mousedown', handleClick);
   }, [profileDropdown]);
 
-  const getCarouselEvents = () => {
-    const eventsToShow = showAllEvents ? allEvents : upcomingEvents;
-    if (eventsToShow.length === 0) return [];
+  // ✅ REPLACE YOUR CURRENT HELPER WITH THIS ROBUST GUARD VERSION
+const getCarouselEvents = () => {
+  const eventsToShow = showAllEvents ? allEvents : upcomingEvents;
+  
+  // 1. Bulletproof check: If array is empty, uninitialized, or zero-length, stop immediately!
+  if (!eventsToShow || eventsToShow.length === 0) {
+    return [];
+  }
 
-    const visibleCount = Math.min(3, eventsToShow.length); 
-    const events = [];
+  const visibleCount = Math.min(3, eventsToShow.length); 
+  const events = [];
 
-    for (let i = 0; i < visibleCount; i++) {
-      events.push(eventsToShow[(carouselIndex + i) % eventsToShow.length]);
+  for (let i = 0; i < visibleCount; i++) {
+    const targetIndex = (carouselIndex + i) % eventsToShow.length;
+    const eventItem = eventsToShow[targetIndex];
+    
+    // 2. Extra safety layer to prevent mapping blank layout blocks
+    if (eventItem) {
+      events.push(eventItem);
     }
+  }
 
-    return events;
-  };
+  return events;
+};
 
   return (
     <div className="font-sans text-gray-800">
