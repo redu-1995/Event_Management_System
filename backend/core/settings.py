@@ -129,16 +129,13 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 AUTH_USER_MODEL = 'users.CustomUser'
 # CORS settings
-CORS_ALLOW_ALL_ORIGINS = True  # For development only!
-# Or, for more security:
-# CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:3000",
-#     "http://127.0.0.1:3000",
-# ]
 CORS_ALLOW_ALL_ORIGINS = False
 
+# Explicitly permit only your trusted frontend URLs
 CORS_ALLOWED_ORIGINS = [
-    FRONTEND_URL,
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    FRONTEND_URL, 
 ]
 
 
