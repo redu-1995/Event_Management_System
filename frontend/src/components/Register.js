@@ -4,8 +4,7 @@ import { useNavigate } from 'react-router-dom';
 // === 1. REPLACE THE HARDCODED STAGING URL WITH VITE ENVIRONMENT VARIABLES ===
 // Change from import.meta.env.VITE_API_URL to process.env.REACT_APP_API_URL
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000';
-const API_BASE = `${API_BASE_URL}/api/users`;
-
+const API_BASE = `${API_BASE_URL}/api/users/`;
 const Register = () => {
   const [form, setForm] = useState({
     username: '',
@@ -23,33 +22,38 @@ const Register = () => {
     e.preventDefault();
     setError('');
     setSuccess('');
-    // ✅ REPLACE YOUR SUBMIT FETCH BLOCK WITH THIS ROBUST SAFE VERSION
-try {
-  const response = await fetch("https://event-management-system-40aw.onrender.com/api/users/register/", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(formData) // Ensures your registration state payload is cleanly passed
-  });
+    try {
+      // This endpoint string will now automatically scale across development and production targets
+     const res = await fetch(`${API_BASE}register/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
 
-  // 1. Check if the server rejected the transaction before processing data
-  if (!response.ok) {
-    // Attempt to read Django's explicit error text (e.g., "Email already exists")
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || errorData.message || `Server responded with status ${response.status}`);
-  }
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        data = await res.text();
+      }
 
-  const data = await response.json();
-  
-  // Registration succeeded -> Move to login cleanly
-  navigate('/login');
-
-} catch (error) {
-  console.error("Registration Submission Failure:", error);
-  // Alert the interface or set an error state so the screen doesn't stay stuck
-  alert(`Registration Failed: ${error.message}`);
-}
+      if (res.ok && typeof data === 'object' && data !== null && (data.id || data.username)) {
+        setSuccess('Registration successful! Redirecting to login...');
+        setTimeout(() => {
+          navigate('/login');
+        }, 1500);
+      } else {
+        if (typeof data === 'object' && data !== null) {
+          setError(Object.values(data).flat().join(' '));
+        } else if (typeof data === 'string') {
+          setError(data);
+        } else {
+          setError('Registration failed. Please try again.');
+        }
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
+    }
   };
 
   
