@@ -23,38 +23,33 @@ const Register = () => {
     e.preventDefault();
     setError('');
     setSuccess('');
-    try {
-      // This endpoint string will now automatically scale across development and production targets
-      const res = await fetch(`${API_BASE}/register/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
+    // ✅ REPLACE YOUR SUBMIT FETCH BLOCK WITH THIS ROBUST SAFE VERSION
+try {
+  const response = await fetch("https://event-management-system-40aw.onrender.com/api/users/register/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(formData) // Ensures your registration state payload is cleanly passed
+  });
 
-      let data;
-      try {
-        data = await res.json();
-      } catch {
-        data = await res.text();
-      }
+  // 1. Check if the server rejected the transaction before processing data
+  if (!response.ok) {
+    // Attempt to read Django's explicit error text (e.g., "Email already exists")
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || errorData.message || `Server responded with status ${response.status}`);
+  }
 
-      if (res.ok && typeof data === 'object' && data !== null && (data.id || data.username)) {
-        setSuccess('Registration successful! Redirecting to login...');
-        setTimeout(() => {
-          navigate('/login');
-        }, 1500);
-      } else {
-        if (typeof data === 'object' && data !== null) {
-          setError(Object.values(data).flat().join(' '));
-        } else if (typeof data === 'string') {
-          setError(data);
-        } else {
-          setError('Registration failed. Please try again.');
-        }
-      }
-    } catch (err) {
-      setError('Network error. Please try again.');
-    }
+  const data = await response.json();
+  
+  // Registration succeeded -> Move to login cleanly
+  navigate('/login');
+
+} catch (error) {
+  console.error("Registration Submission Failure:", error);
+  // Alert the interface or set an error state so the screen doesn't stay stuck
+  alert(`Registration Failed: ${error.message}`);
+}
   };
 
   
