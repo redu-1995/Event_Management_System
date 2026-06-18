@@ -5,8 +5,7 @@ from decouple import config, Csv
 import dj_database_url
 
 
-FRONTEND_URL = config("FRONTEND_URL", default="https://event-management-system-r8fwn2z2s-rediets-projects-15e9e9ed.vercel.app/")
-
+FRONTEND_URL = config("FRONTEND_URL", default="https://event-management-system-ashy-seven.vercel.app")
 # Base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
 
