@@ -1,4 +1,3 @@
-
 # 📅 EventManager — Event Management System
 
 An intuitive, full-stack Event Management Platform designed to streamline the planning, ticketing, and monitoring of corporate events, conferences, and social gatherings. From dynamic attendee tracking to seamless dashboard management, this application handles the complete lifecycle of an event.
