@@ -1,70 +1,84 @@
-# Getting Started with Create React App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# 📅 EventHub — Event Management System
 
-## Available Scripts
+An intuitive, full-stack Event Management Platform designed to streamline the planning, ticketing, and monitoring of corporate events, conferences, and social gatherings. From dynamic attendee tracking to seamless dashboard management, this application handles the complete lifecycle of an event.
 
-In the project directory, you can run:
+---
 
-### `npm start`
+## 🚀 Key Features
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+* **Interactive Dashboard:** Comprehensive control panel for tracking event registration metrics, ticket sales, and upcoming schedules at a glance.
+* **Event Creation & Scheduling:** Tools for organizers to seamlessly construct events.
+* **Modern, Responsive UI:** Optimized for both desktop administration workflows and flawless mobile browsing layouts.
+* **Optimized Discovery:** Fully configured metadata, targeted SEO descriptions, and bespoke design configurations built for production.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+---
 
-### `npm test`
+## 🛠️ Technical Stack
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+This project is built using a highly modular architectural pattern to ensure scalability and speed:
 
-### `npm run build`
+* **Frontend:** React, JavaScript (ES6+), HTML5, CSS3 / Tailwind CSS
+* **Styling & Typography:** Inter Font Family, Custom UI themes
+* **Icons:** Feather Icons, Font Awesome 6
+* **Backend/API Framework:** Django (REST API integration ready)
+* **State Management:** React Hooks (`useState`, `useEffect`, `useContext`)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+---
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-### `npm run eject`
+## 💻 Getting Started
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Follow these steps to configure your local development environment.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### 1. Prerequisites
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Ensure you have the following runtimes installed on your local machine:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+* **Node.js** (v18.0.0 or higher recommended)
+* **npm** or **yarn**
 
-## Learn More
+### 2. Installation
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Clone the repository and install the project dependencies:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```bash
+# Clone the repository
+git clone https://github.com/redu-1995/Event_Management_System.git
 
-### Code Splitting
+# Navigate into the project directory
+cd event-management-system
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+# Install NPM packages
+npm install
 
-### Analyzing the Bundle Size
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+### 3. Running the Application
 
-### Making a Progressive Web App
+To run the application in development mode:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+```bash
+npm start
 
-### Advanced Configuration
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+Open [http://localhost:3000](http://localhost:3000) to view the application in your browser. The page will reload automatically if you make code edits.
 
-### Deployment
+### 4. Production Build
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+To compile the application into static files optimized for production deployment:
 
-### `npm run build` fails to minify
+```bash
+npm run build
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```
+
+This builds the application for production to the `build` folder, correctly bundling React in production mode and optimizing the build for the best performance.
+
+---
+
+## 📝 License
+
+This project is licensed under the MIT License - see the local repository details for permissions.
